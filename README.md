@@ -3,12 +3,10 @@
 
 Version 1.18
 
-    developer:   Roger D. Serwy (RDS)
-    email:       serwy@illinois.edu
-    web:         http://idlex.sourceforge.net
-                 https://github.com/serwy/idlex
-
 IdleX works with Python 2.7, and 3.x.
+
+See also: http://idlex.sourceforge.net
+
 
 Installing IdleX
 ================
