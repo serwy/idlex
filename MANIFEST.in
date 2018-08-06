@@ -1,0 +1,5 @@
+recursive-include idlexlib *.py
+include idlexlib/idlefork/idlelib/Icons/* 
+include idlexlib/idlefork/idlelib/*.def
+include idlexlib/idlefork/idlelib/*.txt
+
