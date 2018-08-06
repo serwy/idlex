@@ -1,6 +1,4 @@
 ![IdlexX logo](idlex_logo.png)
-
-IdleX - IDLE Extensions for Python
 ==================================
 
 Version 1.18
