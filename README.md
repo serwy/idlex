@@ -1,3 +1,4 @@
+![IdlexX logo](idlex_logo.png)
 
 IdleX - IDLE Extensions for Python
 ==================================
@@ -7,9 +8,9 @@ Version 1.18
 developer:   Roger D. Serwy (RDS)
 email:       serwy@illinois.edu
 web:         http://idlex.sourceforge.net
+             https://github.com/serwy/idlex
 
-IdleX works with Python 2.6, 2.7, and 3.x.
-
+IdleX works with Python 2.7, and 3.x.
 
 Installing IdleX
 ================
@@ -28,7 +29,7 @@ On Windows:
     3) Run "scripts/EditWithIdleX.py" if you want 'Edit with IdleX'
        in the right-click context menu.
 
-On Linux:
+On Linux/MacOS:
     1) Open a terminal.
     2) Change into the idlex directory.
     3) Run:
