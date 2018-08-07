@@ -128,11 +128,11 @@ class CodeBrowser:
     def toggle_classdef(self, ev=None):
         tag_filter = {'KEYWORD': ['def', 'class']}
         self.text.after(1, lambda: self.toggle(tag_filter))
+        return "break"
 
     def toggle_keyword(self, ev=None):
         tag_filter = {'KEYWORD': ['def', 'class'],
                'COMMENT': True}
-
         #self.toggle(tag_filter)
         self.text.after(1, lambda: self.toggle(tag_filter))
 
