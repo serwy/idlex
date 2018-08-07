@@ -1408,6 +1408,7 @@ class EditorWindow(object):
             line = lines[pos]
             lines[pos] = '##' + line
         self.set_region(head, tail, chars, lines)
+        return "break"
 
     def uncomment_region_event(self, event):
         head, tail, chars, lines = self.get_region()
@@ -1421,6 +1422,7 @@ class EditorWindow(object):
                 line = line[1:]
             lines[pos] = line
         self.set_region(head, tail, chars, lines)
+        return "break"
 
     def tabify_region_event(self, event):
         head, tail, chars, lines = self.get_region()
