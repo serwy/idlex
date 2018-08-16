@@ -83,6 +83,7 @@ class ScriptBinding:
 
     def checksyntax(self, filename):
         self.shell = shell = self.flist.open_shell()
+        shell.top.wakeup() # RDS - 2018-08-16 - raise the window
         saved_stream = shell.get_warning_stream()
         shell.set_warning_stream(shell.stderr)
         with open(filename, 'rb') as f:

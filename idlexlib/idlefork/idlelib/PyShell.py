@@ -123,7 +123,7 @@ class PyShellEditorWindow(EditorWindow):
         EditorWindow.__init__(self, *args)
         self.text.bind("<<set-breakpoint-here>>", self.set_breakpoint_here)
         self.text.bind("<<clear-breakpoint-here>>", self.clear_breakpoint_here)
-        self.text.bind("<<open-python-shell>>", self.flist.open_shell)
+        self.text.bind("<<open-python-shell>>", self._open_shell)
 
         self.breakpointPath = os.path.join(idleConf.GetUserCfgDir(),
                                            'breakpoints.lst')
@@ -145,6 +145,11 @@ class PyShellEditorWindow(EditorWindow):
         ("Set Breakpoint", "<<set-breakpoint-here>>", None),
         ("Clear Breakpoint", "<<clear-breakpoint-here>>", None)
     ]
+
+    def _open_shell(self, ev=None):
+        shell = self.flist.open_shell()
+        shell.top.wakeup()
+        return "break"
 
     def color_breakpoint_text(self, color=True):
         "Turn colorizing of breakpoint text on or off"
@@ -315,7 +320,8 @@ class PyShellFileList(FileList):
 
     def open_shell(self, event=None):
         if self.pyshell:
-            self.pyshell.top.wakeup()
+            pass # RDS - 2018-08-16 manually from ScriptBinding
+            #self.pyshell.top.wakeup()
         else:
             self.pyshell = PyShell(self)
             if self.pyshell:
