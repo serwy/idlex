@@ -14,6 +14,7 @@ import types
 
 from idlelib import CallTipWindow
 from idlelib.HyperParser import HyperParser
+from idlelib.ExecDict import execdict
 
 class CallTips:
 
@@ -108,7 +109,7 @@ def get_entity(expression):
     """
     if expression:
         namespace = sys.modules.copy()
-        namespace.update(__main__.__dict__)
+        namespace.update(execdict)
         try:
             return eval(expression, namespace)
         except BaseException:

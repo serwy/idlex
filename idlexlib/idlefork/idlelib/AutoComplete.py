@@ -17,6 +17,7 @@ COMPLETE_ATTRIBUTES, COMPLETE_FILES = range(1, 2+1)
 
 from idlelib import AutoCompleteWindow
 from idlelib.HyperParser import HyperParser
+from idlelib.ExecDict import execdict
 
 import __main__
 
@@ -186,7 +187,7 @@ class AutoComplete:
         else:
             if mode == COMPLETE_ATTRIBUTES:
                 if what == "":
-                    namespace = __main__.__dict__.copy()
+                    namespace = execdict.copy()
                     namespace.update(__main__.__builtins__.__dict__)
                     bigl = eval("dir()", namespace)
                     bigl.sort()
@@ -224,7 +225,7 @@ class AutoComplete:
     def get_entity(self, name):
         """Lookup name in a namespace spanning sys.modules and __main.dict__"""
         namespace = sys.modules.copy()
-        namespace.update(__main__.__dict__)
+        namespace.update(execdict)
         return eval(name, namespace)
 
 

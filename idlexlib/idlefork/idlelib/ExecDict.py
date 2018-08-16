@@ -53,8 +53,10 @@ class ExecDict(ObservableDict):
         super().__init__(*args, **kw)
 
     def post_update(self, up, before):
-        self.written = list(up.keys())
+        self.written.extend(list(up.keys()))
 
+
+execdict = ExecDict()
 
 if __name__ == '__main__':
     import types

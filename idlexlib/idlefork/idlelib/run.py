@@ -19,7 +19,7 @@ from idlelib import IOBinding
 
 import __main__
 
-from idlelib.ExecDict import ExecDict
+from idlelib.ExecDict import execdict
 
 LOCALHOST = '127.0.0.1'
 
@@ -340,7 +340,7 @@ class Executive(object):
 
     def __init__(self, rpchandler):
         self.rpchandler = rpchandler
-        self.locals = ExecDict(__main__.__dict__)
+        self.locals = execdict
         self.calltip = CallTips.CallTips()
         self.autocomplete = AutoComplete.AutoComplete()
 
