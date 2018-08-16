@@ -208,7 +208,7 @@ class Terminal:
 
     def history_ismember(self):
         """ if the current input is in the history, return true """
-        s = self.editwin.history._get_source('iomark', 'end-1c')
+        s = self.editwin.text.get('iomark', 'end-1c')
         return (s in self.editwin.history.history)
 
     def key_up_callback(self, event):
