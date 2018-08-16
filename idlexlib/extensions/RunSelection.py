@@ -280,7 +280,7 @@ class RunSelection(object):
         self.text.tag_remove('sel', '1.0', END)
         if code_region:
             self.shrink_region(*code_region, tag='sel')
-
+        return "break"
 
     def run_tagged_event(self, event=None):
         # <<run-tagged>> was triggered
@@ -294,6 +294,7 @@ class RunSelection(object):
             code_region = self.send_code(*r)
             if code_region:
                 self.shrink_region(*code_region, tag='RUNREGION')
+        return "break"
 
     def region_tagged_join_event(self, event=None):
         sel = self.get_sel_range()
