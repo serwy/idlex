@@ -19,6 +19,8 @@ from idlelib import IOBinding
 
 import __main__
 
+from idlelib.ExecDict import ExecDict
+
 LOCALHOST = '127.0.0.1'
 
 import warnings
@@ -338,15 +340,17 @@ class Executive(object):
 
     def __init__(self, rpchandler):
         self.rpchandler = rpchandler
-        self.locals = __main__.__dict__
+        self.locals = ExecDict(__main__.__dict__)
         self.calltip = CallTips.CallTips()
         self.autocomplete = AutoComplete.AutoComplete()
 
     def runcode(self, code):
         global interruptable
+        has_exception = False
         try:
             self.usr_exc_info = None
             interruptable = True
+            self.locals.written.clear()
             try:
                 exec(code, self.locals)
             finally:
@@ -354,8 +358,10 @@ class Executive(object):
         except SystemExit:
             # Scripts that raise SystemExit should just
             # return to the interactive prompt
+            has_exception = True
             pass
         except:
+            has_exception = True
             self.usr_exc_info = sys.exc_info()
             if quitting:
                 exit()
@@ -366,6 +372,8 @@ class Executive(object):
                 self.rpchandler.interp.open_remote_stack_viewer()
         else:
             flush_stdout()
+
+        return (self.locals.written.copy(), has_exception)
 
     def interrupt_the_server(self):
         if interruptable:

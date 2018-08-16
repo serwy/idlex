@@ -392,6 +392,8 @@ class ModifiedInterpreter(InteractiveInterpreter):
         self.port = PORT
         self.original_compiler_flags = self.compile.compiler.flags
 
+        self.global_modify = lambda x: None
+
     _afterid = None
     rpcclt = None
     rpcsubproc = None
@@ -572,8 +574,8 @@ class ModifiedInterpreter(InteractiveInterpreter):
             how, what = response
             console = self.tkconsole.console
             if how == "OK":
-                if what is not None:
-                    print(repr(what), file=console)
+                # take the response, feed it back into SubCode
+                self.global_modify(what)
             elif how == "EXCEPTION":
                 if self.tkconsole.getvar("<<toggle-jit-stack-viewer>>"):
                     self.remote_stack_viewer()

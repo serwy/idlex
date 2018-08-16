@@ -79,6 +79,7 @@ active=True
 indented=True
 uncomment=True
 highlighting=True
+react=True
 
 [SubCode_cfgBindings]
 subcode-run=<Control-Key-Return>
@@ -96,6 +97,7 @@ subcode-enable-toggle=
 subcode-indented-toggle=
 subcode-uncomment-toggle=
 subcode-highlighting-toggle=
+subcode-reactive-toggle=
 
 """
 
@@ -114,6 +116,7 @@ SUBCODE_STR = "SubCode"
 SUBCODE_INSERT = '## [%s]\n' % SUBCODE_STR.lower() # Label for "Insert Subcode Marker"
 
 HIGHLIGHT_INTERVAL = 250                # milliseconds
+REACT_HEAD = '## react: '
 
 import sys
 import os
@@ -177,10 +180,11 @@ class RunManager(object):
 
     """
 
-    def __init__(self, editwin):
+    def __init__(self, editwin, subcode):
         self.editwin = editwin
         self.shell_flags = 0        # shell's compile flags
         self.tempfiles = []
+        self.subcode = subcode
 
         future_flags = self.future_flags = []
 
@@ -259,6 +263,7 @@ class RunManager(object):
             except Exception as err:
                 print(err)
 
+        shell.interp.global_modify = self.global_modify
         try:
             if isinstance(code, (str, unicode)):
                 # only compile if not running from IPyIDLE
@@ -266,13 +271,21 @@ class RunManager(object):
                     filename = '<untitled>'
                 if isinstance(shell.interp, PyShell.ModifiedInterpreter):
                     code = shell.interp.compile(code, filename, 'exec')
-                    
+
             shell.interp.runcode(code)
         except AttributeError as err:  # caused when holding ctrl+enter
             print('run error', err)
             return False
 
         return True
+
+    def global_modify(self, what):
+        if self.editwin.text is None:
+            self.shell.interp.global_modify = lambda x: None
+            self.editwin = None
+            self.shell = None
+            return
+        self.subcode.reactive_subcode(what)
 
     def write_message(self, shell, message):
         """ Send some feedback to the Shell """
@@ -422,13 +435,14 @@ class SubCode(object):
                 ('!Allow Indented %ss'  % SUBCODE_STR, '<<subcode-indented-toggle>>'),
                 ('!Uncomment #: at depth', '<<subcode-uncomment-toggle>>'),
                 ('!Highlight Active %s' % SUBCODE_STR, '<<subcode-highlighting-toggle>>'),
+                ('!Reactive Subcodes', '<<subcode-reactive-toggle>>'),
                  None,
                 ]),
         ]
 
 
     # Menu items for a dedicated "SubCode" menu
-    # Collapse the normal menu to a single menu 
+    # Collapse the normal menu to a single menu
     _L = []
     menudefs_dedicated = [('subcode', _L)]
     for menu, items in menudefs_normal:
@@ -462,6 +476,7 @@ class SubCode(object):
 
         self.ColorDelegatorOrig = editwin.ColorDelegator
         editwin.ColorDelegator = getColorDelegator()
+        self.reactive_reset()
 
         if SUBCODE_MENU:
             mbar = editwin.menubar
@@ -479,7 +494,7 @@ class SubCode(object):
         self.text = editwin.text
         self.reset_id = None
 
-        self.runmanager = RunManager(editwin)
+        self.runmanager = RunManager(editwin, self)
         self.enable = False
         self.indented = False
         self.uncomment = False
@@ -488,6 +503,7 @@ class SubCode(object):
         self.subcode_indented(get_cfg("indented"), init=True)
         self.subcode_uncomment(get_cfg("uncomment"))
         self.subcode_highlighting(get_cfg("highlighting"))
+        self.subcode_reactive(get_cfg("reactive"))
         self.startup_enable()
         text = self.text
         text.bind('<FocusOut>', self.focus_out, '+')
@@ -605,6 +621,10 @@ class SubCode(object):
         self.subcode_highlighting(not self.highlighting)
         return "break"
 
+    def subcode_reactive_toggle_event(self, ev=None):
+        self.subcode_reactive(not self.reactive)
+        return "break"
+
 
     def subcode_enable(self, b=True, init=False):
         if self.ispython(init=init):
@@ -647,6 +667,11 @@ class SubCode(object):
         else:
             if self.enable:
                 self.highlighter_schedule()
+
+    def subcode_reactive(self, b=True):
+        self.reactive = b
+        set_cfg("reactive", self.reactive)
+        self.editwin.setvar('<<subcode-reactive-toggle>>', self.reactive)
 
     def using_tabs(self, ev=None):
         if self.editwin.usetabs:
@@ -730,7 +755,7 @@ class SubCode(object):
         self.run_code(entire=True, as_import=True)
         return "break"
 
-    def run_code(self, entire=False, as_import=False):
+    def run_code(self, entire=False, as_import=False, custom_pos=None):
         """ Runs a subcode. Returns True if successful. """
         text = self.text
         fn = self.editwin.io.filename
@@ -746,8 +771,13 @@ class SubCode(object):
             code = text.get('1.0', end)
             message = "All %ss [%s:1-%i]" % (SUBCODE_STR, file_tail, eline-1)
             depth = 0
+            react_position = end
         else:
-            i = self.text.index('insert')
+            if custom_pos is None:
+                i = self.text.index('insert')
+            else:
+                i = custom_pos
+            react_position = self.text.index(i + ' + 1 line')
             sline, eline, depth = self.get_active_subcode(i)
             code = self.get_code(sline, eline, depth,
                                  header=True, uncomment=self.uncomment)
@@ -758,17 +788,20 @@ class SubCode(object):
             message = "%s [%s:%i-%i] '%s'" % \
                       (SUBCODE_STR, file_tail, sline, eline, subcodename)
 
+            if not subcodename.startswith(REACT_HEAD):
+                react_position = '1.0'
 
         linestr = '%i-%i' % (sline, eline)
         filename = '%s:::%s at %s' % (fn,
                                       linestr,
                                       time.strftime("%H:%M:%S"))
 
+        self.react_position = react_position
         try:  # check for errors
             text.tag_remove("ERROR", '1.0', END)
             if not as_import:
                 # TODO: optional syntax check for subcode
-             
+
                 code = self.runmanager.compile(code, filename, mode='exec')
                 status = self.runmanager.run(code, message)
             else:
@@ -784,6 +817,50 @@ class SubCode(object):
         self.focus_editor()
 
         return status
+
+    def reactive_reset(self):
+        self.react_position = '1.0'
+        self.react_written = set()
+
+
+    def reactive_subcode(self, what):
+        #print('reactive subcode', what, self.react_position)
+        if not self.reactive:
+            return
+
+        upkeys, was_err = what
+        if was_err:
+            # reset and return
+            self.reactive_reset()
+            return
+
+        self.react_written.update(upkeys)
+
+        # get next reactive cell
+        rp = self.react_position
+        prev_line = -1
+        can_react = False
+        while True:
+            nline, ndepth = self.get_next_subcode(rp, end=False)
+            if nline == prev_line:
+                break
+            prev_line = nline
+            rp = '%i.0' % nline
+            if ndepth == 0:
+                ctext = self.editwin.text.get('%i.0' % nline, '%i.0 lineend' % nline)
+                if ctext.startswith(REACT_HEAD):
+                    rvars = set([v.strip() for v in ctext[len(REACT_HEAD):].strip().split(',')])
+                else:
+                    rvars = set()
+
+                # can we call this reactive cell ?
+                if rvars & self.react_written:
+                    self.editwin.text.after(1, lambda: self.run_code(custom_pos=rp))
+                    can_react = True
+                    break
+
+        if not can_react:
+            self.reactive_reset()
 
 
     def handle_error(self, e, depth=0):
