@@ -3,12 +3,10 @@
 
 Version 1.18
 
-developer:   Roger D. Serwy (RDS)
-email:       serwy@illinois.edu
-web:         http://idlex.sourceforge.net
-             https://github.com/serwy/idlex
-
 IdleX works with Python 2.7, and 3.x.
+
+See also: http://idlex.sourceforge.net
+
 
 Installing IdleX
 ================
@@ -22,17 +20,14 @@ Running IdleX
 =============
 
 On Windows:
-    1) Extract the contents of the idlex-x.x.zip file.
-    2) Double-click "idlex.py" to launch IdleX.
-    3) Run "scripts/EditWithIdleX.py" if you want 'Edit with IdleX'
-       in the right-click context menu.
+1) Extract the contents of the idlex-x.x.zip file.
+2) Double-click "idlex.py" to launch IdleX.
+3) Run "scripts/EditWithIdleX.py" if you want 'Edit with IdleX' in the right-click context menu.
 
 On Linux/MacOS:
-    1) Open a terminal.
-    2) Change into the idlex directory.
-    3) Run:
-        $ python idlex.py
-
+1) Open a terminal.
+2) Change into the idlex directory.
+3) Run: `$ python idlex.py`
 
 Demos
 =====
