@@ -49,11 +49,11 @@ class ObservableDict(dict):
 
 class ExecDict(ObservableDict):
     def __init__(self, *args, **kw):
-        self.written = []
+        self.written = set()
         super().__init__(*args, **kw)
 
     def post_update(self, up, before):
-        self.written.extend(list(up.keys()))
+        self.written.update(up.keys())
 
 
 execdict = ExecDict()
