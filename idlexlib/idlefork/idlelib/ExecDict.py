@@ -56,7 +56,7 @@ class ExecDict(ObservableDict):
         self.written.update(up.keys())
 
 
-execdict = ExecDict()
+execdict = ExecDict({'__name__':'__main__'})
 
 if __name__ == '__main__':
     import types
