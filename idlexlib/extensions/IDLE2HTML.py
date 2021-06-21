@@ -85,7 +85,7 @@ else:
         import tkinter as Tkinter
         import tkinter.filedialog as tkFileDialog
 
-import cgi
+import html
 
 class IDLE2HTML(object):
     menudefs=[('options',[('Export to HTML', '<<idle2html>>')])]
@@ -142,7 +142,7 @@ class IDLE2HTML(object):
                 if content.upper() == 'ERROR':
                     inside_error=1
             if tagname=='text':
-                out.append(cgi.escape(content))
+                out.append(html.escape(content))
             if tagname=='tagoff' and not (content.upper() in ('SYNC','TODO','SEL')):
                 if content.upper() == 'ERROR':
                     inside_error=0
