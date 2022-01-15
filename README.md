@@ -3,7 +3,7 @@
 
 Version 1.22
 
-IdleX works with Python 3.3+.
+IdleX works with Python 3.4+.
 
 See also: http://idlex.sourceforge.net
 
