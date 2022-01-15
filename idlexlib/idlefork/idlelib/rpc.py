@@ -127,6 +127,7 @@ class SocketIO(object):
     nextseq = 0
 
     def __init__(self, sock, objtable=None, debugging=None):
+        self._socket_lock = threading.Lock()
         self.sockthread = threading.current_thread()
         if debugging is not None:
             self.debugging = debugging
@@ -334,13 +335,14 @@ class SocketIO(object):
             print("Cannot pickle:", repr(message), file=sys.__stderr__)
             raise
         s = struct.pack("<i", len(s)) + s
-        while len(s) > 0:
-            try:
-                r, w, x = select.select([], [self.sock], [])
-                n = self.sock.send(s[:BUFSIZE])
-            except (AttributeError, TypeError):
-                raise OSError("socket no longer exists")
-            s = s[n:]
+        with self._socket_lock:
+            while len(s) > 0:
+                try:
+                    r, w, x = select.select([], [self.sock], [])
+                    n = self.sock.send(s[:BUFSIZE])
+                except (AttributeError, TypeError):
+                    raise OSError("socket no longer exists")
+                s = s[n:]
 
     buff = b''
     bufneed = 4
