@@ -2,10 +2,9 @@
 import sys
 import os
 
-
+# add idlelib to the sys path
 head, tail = os.path.split(__file__)
-if sys.version_info.minor >= 6:
-    sys.path.insert(0, os.path.join(head, 'idlefork'))
+sys.path.insert(0, os.path.join(head, 'idlefork'))
 
 try:
     

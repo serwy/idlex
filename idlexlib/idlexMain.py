@@ -54,7 +54,9 @@ import re
 
 from idlelib import macosxSupport
 
-version = "1.18"   # IdleX version
+from idlexlib._version import __version__
+
+version = __version__   # IdleX version
 
 IDLE_DEFAULT_EXT = []    # list of default extensions that IDLE has
 

@@ -2,6 +2,7 @@
 import os
 import glob
 from setuptools import setup
+from idlexlib._version import __version__
 
 def get_dir(d):
     return glob.glob('%s/*' % d)
@@ -10,7 +11,7 @@ def get_dir(d):
 ldesc = """IdleX is a collection of over 20 extensions for the Python IDLE environment."""
 
 setup(name='idlex',
-      version='1.18',
+      version=__version__,
       description='IDLE Extensions for Python',
       author='Roger D. Serwy',
       author_email='serwy@illinois.edu',

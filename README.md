@@ -1,9 +1,9 @@
 ![IdlexX logo](idlex_logo.png)
 ==================================
 
-Version 1.18
+Version 1.22
 
-IdleX works with Python 2.7, and 3.x.
+IdleX works with Python 3.3+.
 
 See also: http://idlex.sourceforge.net
 
@@ -47,6 +47,6 @@ Adding Extensions to Standard IDLE
 If you want to include an extension in the standard IDLE,
 copy the extension to "idlelib" and then modify
 idlelib/config-extensions.def to include the contents
-of "config_extension_def" found in the extension source code.
+of `config_extension_def` found in the extension source code.
 
 
