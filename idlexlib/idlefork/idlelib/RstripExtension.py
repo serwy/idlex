@@ -26,6 +26,12 @@ class RstripExtension:
             if cut < raw:
                 text.delete('%i.%i' % (cur, cut), '%i.end' % cur)
 
+        while text.get('end-2c') == '\n':
+            text.delete('end-2c')
+            if text.index('insert') == '1.0':
+                break
+        text.insert('end-1c', '\n')
+
         undo.undo_block_stop()
 
 if __name__ == "__main__":
