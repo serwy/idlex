@@ -137,6 +137,9 @@ class AutoComplete:
             while i and curline[i-1] not in "'\"":
                 i -= 1
             comp_what = curline[i:j]
+            if comp_what.strip() == '':  # do not complete blank lines
+                return
+
         elif hp.is_in_code() and (not mode or mode==COMPLETE_ATTRIBUTES):
             self._remove_autocomplete_window()
             mode = COMPLETE_ATTRIBUTES
