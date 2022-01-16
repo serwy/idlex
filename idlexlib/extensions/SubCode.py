@@ -249,11 +249,12 @@ class RunManager(object):
         if filename is not None:
             head, tail = os.path.split(filename)
             setup = r"""if 1:
+                __file__ = %(filename)r
                 import sys as _sys
                 if %(orig_dir)r not in _sys.path:
                     _sys.path.insert(0, %(orig_dir)r)
                 del _sys
-                """ % {'orig_dir':head}
+                """ % {'orig_dir':head, 'filename':filename}
             try:
                 shell.interp.runcommand(setup.strip()) # BUGFIX: .strip() for Python 2.6
             except Exception as err:
