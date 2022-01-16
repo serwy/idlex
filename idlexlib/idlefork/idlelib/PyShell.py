@@ -539,17 +539,15 @@ class ModifiedInterpreter(InteractiveInterpreter):
                 return
 
     def transfer_path(self, with_cwd=False):
-        if with_cwd:        # Issue 13506
-            path = ['']     # include Current Working Directory
-            path.extend(sys.path)
-        else:
-            path = sys.path
-
+        # Undoing issue 13506 - the `.pth` files
+        # are ignored until IDLE is restarted.
         self.runcommand("""if 1:
         import sys as _sys
-        _sys.path = %r
+        if (%r) and ('' not in _sys.path):
+            _sys.path.insert(0, '')
         del _sys
-        \n""" % (path,))
+        \n""" % (with_cwd))
+
 
     active_seq = None
 
