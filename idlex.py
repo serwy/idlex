@@ -4,12 +4,8 @@
 import sys
 
 def show_error():
-    if sys.version < '3':
-        import Tkinter as tk
-        import tkMessageBox as messagebox
-    else:
-        import tkinter as tk
-        import tkinter.messagebox as messagebox
+    import tkinter as tk
+    import tkinter.messagebox as messagebox
 
     root = tk.Tk()
     root.withdraw()
