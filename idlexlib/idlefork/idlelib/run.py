@@ -464,8 +464,8 @@ class Executive(object):
             jit = self.rpchandler.console.getvar("<<toggle-jit-stack-viewer>>")
             if jit:
                 self.rpchandler.interp.open_remote_stack_viewer()
-        else:
-            flush_stdout()
+        
+        flush_stdout()
 
     def interrupt_the_server(self):
         if interruptable:
