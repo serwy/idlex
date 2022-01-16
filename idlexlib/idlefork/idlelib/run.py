@@ -21,6 +21,8 @@ import __main__
 
 LOCALHOST = '127.0.0.1'
 
+USE_UNBUFFERED = False
+
 import warnings
 
 def idle_showwarning_subproc(
@@ -107,6 +109,11 @@ def main(del_exitfunc=False):
                                   args=((LOCALHOST, port),))
     sockthread.daemon = True
     sockthread.start()
+
+    global buffer_handler
+    buffer_handler = BufferOutputHandler()
+
+
     while 1:
         try:
             if exit_now:
@@ -246,6 +253,7 @@ def cleanup_traceback(tb, exclude):
 
 def flush_stdout():
     """XXX How to do this now?"""
+    buffer_handler.flush()
 
 def exit():
     """Exit subprocess, possibly after first clearing exit functions.
@@ -291,6 +299,89 @@ class MyRPCServer(rpc.RPCServer):
             quitting = True
             thread.interrupt_main()
 
+
+class BufferOutputHandler:
+    LIMIT_BACKPRESSURE = 1000   # characters in buffer
+    BUFFER_TIME = 0.050   # (seconds)
+
+    def __init__(self):
+        self._put_lock = threading.Lock()
+
+        self.buffer_output = queue.Queue()
+        self.ev_backpressure = threading.Event()
+        self.ev_backpressure.set()
+
+
+        self._put = 0
+        self._get = 0
+        self._commit = 0
+
+        self.th = threading.Thread(
+            name='BufferOutputHandler',
+            target=self.forward_buffer,
+            daemon=True)
+        self.th.start()
+
+    def forward_buffer(self):
+        active = 'stdout'
+        parts = []
+
+        def _flush_active():
+            s = ''.join(parts)
+            obj = getattr(sys, active)
+            PyShell.PseudoOutputFile.write(obj, s)
+            self._commit = self._get
+            parts.clear()
+
+        while True:
+            time.sleep(self.BUFFER_TIME)  # allow time for buffer to collect content
+
+            while self.buffer_output.qsize():
+                sel, content = self.buffer_output.get()
+                self._get += len(content)
+                if sel == active:
+                    parts.append(content)
+                else:
+                    _flush_active()
+                    active = sel
+                    parts.append(content)
+            if parts:
+                _flush_active()
+
+            if self._put - self._commit <= self.LIMIT_BACKPRESSURE:
+                self.ev_backpressure.set()
+
+    def put(self, tags, s):
+        with self._put_lock:
+            self._put += len(s)
+
+        self.buffer_output.put((tags, s))
+
+        if self._put - self._commit > self.LIMIT_BACKPRESSURE:
+            self.ev_backpressure.clear()
+
+        self.ev_backpressure.wait()
+
+
+    def flush(self):
+        target = self._put
+        while True:
+            if self._commit >= target:
+                break
+            time.sleep(0.050)
+
+
+class _BufferOutputFile(PyShell.PseudoOutputFile):
+    def write(self, s):
+        if self.tags not in ('stdout', 'stderr'):
+            # fallback on regular call
+            return super().write(s)
+
+        buffer_handler.put(self.tags, s)
+        return len(s)
+
+
+
 class MyHandler(rpc.RPCHandler):
 
     def handle(self):
@@ -300,10 +391,19 @@ class MyHandler(rpc.RPCHandler):
         self.console = self.get_remote_proxy("console")
         sys.stdin = PyShell.PseudoInputFile(self.console, "stdin",
                 IOBinding.encoding)
-        sys.stdout = PyShell.PseudoOutputFile(self.console, "stdout",
-                IOBinding.encoding)
-        sys.stderr = PyShell.PseudoOutputFile(self.console, "stderr",
-                IOBinding.encoding)
+
+        if USE_UNBUFFERED:
+            sys.stdout = PyShell.PseudoOutputFile(self.console, "stdout",
+                    IOBinding.encoding)
+            sys.stderr = PyShell.PseudoOutputFile(self.console, "stderr",
+                    IOBinding.encoding)
+        else:
+            sys.stdout = _BufferOutputFile(self.console, "stdout",
+                    IOBinding.encoding)
+            sys.stderr = _BufferOutputFile(self.console, "stderr",
+                    IOBinding.encoding)
+
+
 
         sys.displayhook = rpc.displayhook
         # page help() text to shell.
