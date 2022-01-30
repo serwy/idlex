@@ -1194,6 +1194,7 @@ class EditorWindow(object):
         # Delete whitespace left, until hitting a real char or closest
         # preceding virtual tab stop.
         chars = text.get("insert linestart", "insert")
+        _chars = chars
         if chars == '':
             if text.compare("insert", ">", "1.0"):
                 # easy: delete preceding newline
@@ -1225,6 +1226,11 @@ class EditorWindow(object):
             have = len(chars.expandtabs(tabwidth))
             if have <= want or chars[-1] not in " \t":
                 break
+
+        # 2022-01-26 RDS - don't delete too many " "
+        if _chars[-ncharsdeleted:] in (' '*2,):
+            ncharsdeleted = 1
+
         text.undo_block_start()
         text.delete("insert-%dc" % ncharsdeleted, "insert")
         if have < want:
