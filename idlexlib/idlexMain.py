@@ -100,7 +100,13 @@ def install_idlex_manager():
             new_filename = 'idlex-' + filename
         new_fullfile = os.path.join(directory, new_filename)
         value.file = new_fullfile
-        value.Load()
+        try:
+            value.Load()
+        except:
+            # 2022-02-01 Bug with corrupted idlerc files
+            # Let idlex exit overwrite it
+            import traceback
+            traceback.print_exc()
 
     mod = extensionManager.load_extension('idlexManager')
     mod.extensionManager = extensionManager
