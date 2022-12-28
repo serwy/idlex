@@ -69,7 +69,8 @@ class CallTip:
         except TclError:
             pass
         self.label = Label(tw, text=self.text, justify=LEFT,
-                           background="#ffffe0", relief=SOLID, borderwidth=1,
+                           background="#ffffe0", foreground="black",
+                           relief=SOLID, borderwidth=1,
                            font = self.widget['font'])
         self.label.pack()
         tw.lift()  # work around bug in Tk 8.5.18+ (issue #24570)
